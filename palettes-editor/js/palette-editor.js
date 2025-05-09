@@ -598,75 +598,66 @@ document.addEventListener('contextmenu', function(e) {
 });
 
 function loadDefaultPalettes() {
-    console.log('Loading default palettes');
-    
-    fetch('js/palette-list.json')
+    fetch('./palettes/')
         .then(response => {
             if (!response.ok) {
-                throw new Error('Palette list not found');
+                throw new Error('Palettes directory not found');
             }
-            return response.json();
+            return response.text();
         })
-        .then(data => {
-            if (!data.palettes || data.palettes.length === 0) {
-                throw new Error('No palettes defined in palette list');
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const links = doc.querySelectorAll('a');
+            
+            const jsonFiles = Array.from(links)
+                .map(link => link.href)
+                .filter(href => href.endsWith('.json'))
+                .map(href => href.split('/').pop());
+            
+            if (jsonFiles.length === 0) {
+                throw new Error('No palette files found');
             }
             
             const savedLibrary = localStorage.getItem('paletteLibrary');
             const existingPalettes = savedLibrary ? JSON.parse(savedLibrary) : [];
             
             if (existingPalettes.length === 0) {
-                loadPaletteFiles(data.palettes, []);
+                loadPaletteFiles(jsonFiles, []);
             } else {
                 if (confirm(`You already have ${existingPalettes.length} palettes in your library. Would you like to add the palettes from the game? Click Cancel to keep only your existing palettes.`)) {
-                    loadPaletteFiles(data.palettes, existingPalettes);
+                    loadPaletteFiles(jsonFiles, existingPalettes);
                 }
             }
         })
         .catch(error => {
-            console.error('Error loading palette list:', error);
-            loadHardcodedDefaultPalettes();
+            console.error('Error loading default palettes:', error);
         });
 }
 
 function loadPaletteFiles(fileNames, existingPalettes) {
     const existingNames = existingPalettes.map(p => p.name);
     let loadedCount = 0;
-    let totalFiles = fileNames.length;
     let newPalettes = [...existingPalettes];
-    let loadErrors = 0;
     
     fileNames.forEach(fileName => {
-        fetch(`./palettes/${fileName}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Failed to load palette: ${response.status}`);
-                }
-                return response.json();
-            })
+        fetch(`palettes/${fileName}`)
+            .then(response => response.json())
             .then(palette => {
                 if (!existingNames.includes(palette.name)) {
                     newPalettes.push(palette);
                     loadedCount++;
                 }
+                
+                if (loadedCount === fileNames.length) {
+                    paletteLibrary = newPalettes;
+                    saveLibrary();
+                    renderLibrary();
+                    console.log(`Loaded ${loadedCount} new palettes from files.`);
+                }
             })
             .catch(error => {
                 console.error(`Error loading palette ${fileName}:`, error);
-                loadErrors++;
-            })
-            .finally(() => {
-                // Check if we've processed all files (either loaded or errored)
-                if (loadedCount + loadErrors === totalFiles) {
-                    if (loadedCount > 0) {
-                        paletteLibrary = newPalettes;
-                        saveLibrary();
-                        renderLibrary();
-                        console.log(`Loaded ${loadedCount} new palettes from files.`);
-                    } else {
-                        console.error('Failed to load any palettes from files');
-                        loadHardcodedDefaultPalettes();
-                    }
-                }
             });
     });
 }
