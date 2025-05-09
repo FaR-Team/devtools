@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/enhanced-common.css">
+    <link rel="stylesheet" href="css\/palette-preview.css">
+    <link rel="stylesheet" href="css\/palette-css.css">
+    <style>
+        .color-row {
+            height: 40px;
+            border-radius: 8px;
+            margin-left: 1rem;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .palette-preview {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .palette-preview h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .preview-row {
+            height: 30px;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .buttons {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .library-panel {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .library-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-box {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+        
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .library-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .library-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .library-item-name {
+            padding: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .palette-preview-container {
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .palette-preview-row {
+            flex: 1;
+        }
+        
+        .library-item-actions {
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+        }
+        
+        .empty-library {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #aaa;
+        }
+        
+        .empty-library i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .image-preview {
+            display: flex;
+            margin: 1rem 0;
+            height: 50px;
+        }
+        
+        .pixel {
+            flex: 1;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 2px dashed var(--primary-color);
+        }
+        
+        .error {
+            color: var(--danger-color);
+            margin-top: 0.5rem;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .library-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .library-controls {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .search-box {
+                flex-grow: 1;
+            }
+            
+            .buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="../index.html">
+                <i class="fas fa-tools me-2"></i>FaR DevTools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../roommakers-data-editor/RMEditor.html">
+                            <i class="fas fa-database me-1"></i> RM Data Editor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="ColorPaletteEditor.html">
+                            <i class="fas fa-palette me-1"></i> RM Palette Editor
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-palette me-2"></i> Color Palette Editor</h1>
+                    <p class="text-white-50 mb-0">Create and edit 4-color palettes for Room Makers</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-dark p-2">
+                        <i class="fas fa-code-branch me-1"></i> v1.2.0
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="editor-panel">
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-tab="editor">
+                        <i class="fas fa-edit me-1"></i> Editor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-tab="image-import">
+                        <i class="fas fa-image me-1"></i> Image Import
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="tab-content active" id="editor-tab">
+                <div class="palette-name">
+                    <label for="paletteName">Palette Name:</label>
+                    <input type="text" id="paletteName" value="NewPalette" placeholder="Enter palette name..." class="form-control">
+                </div>
+                
+                <div class="color-row">
+                    <span class="color-label">Darkest:</span>
+                    <input type="color" id="darkestColor" value="#000000" class="form-control form-control-color">
+                    <input type="text" id="darkestHex" value="#000000" class="form-control mx-2">
+                    <div class="color-preview" id="darkestPreview"></div>
+                </div>
+                
+                <div class="color-row">
+                    <span class="color-label">Dark:</span>
+                    <input type="color" id="darkColor" value="#333333" class="form-control form-control-color">
+                    <input type="text" id="darkHex" value="#333333" class="form-control mx-2">
+                    <div class="color-preview" id="darkPreview"></div>
+                </div>
+                
+                <div class="color-row">
+                    <span class="color-label">Light:</span>
+                    <input type="color" id="lightColor" value="#BBBBBB" class="form-control form-control-color">
+                    <input type="text" id="lightHex" value="#BBBBBB" class="form-control mx-2">
+                    <div class="color-preview" id="lightPreview"></div>
+                </div>
+                
+                <div class="color-row">
+                    <span class="color-label">Lightest:</span>
+                    <input type="color" id="lightestColor" value="#FFFFFF" class="form-control form-control-color">
+                    <input type="text" id="lightestHex" value="#FFFFFF" class="form-control mx-2">
+                    <div class="color-preview" id="lightestPreview"></div>
+                </div>
+                
+                <div class="palette-preview">
+                    <h3><i class="fas fa-eye me-2"></i> Palette Preview</h3>
+                    <div class="preview-row" id="darkestRow"></div>
+                    <div class="preview-row" id="darkRow"></div>
+                    <div class="preview-row" id="lightRow"></div>
+                    <div class="preview-row" id="lightestRow"></div>
+                </div>
+                
+                <div class="buttons">
+                    <button id="saveBtn" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Palette
+                    </button>
+                    <button id="loadBtn" class="btn btn-primary">
+                        <i class="fas fa-folder-open me-1"></i> Load Palette
+                    </button>
+                    <button id="addToLibraryBtn" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i> Add to Library
+                    </button>
+                    <button id="randomizeBtn" class="btn btn-info text-white">
+                        <i class="fas fa-random me-1"></i> Randomize Palette
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="image-import-tab">
+                <div class="section">
+                    <h2 class="mb-3"><i class="fas fa-image me-2"></i> Import from Image</h2>
+                    <p class="mb-3">Upload a 4-pixel image (horizontal or vertical) to extract colors. The colors will be assigned in order: Darkest, Dark, Light, Lightest.</p>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="imageInput" class="form-label">Select Image</label>
+                                <input type="file" id="imageInput" accept="image/*" class="form-control">
+                                <div id="imageError" class="error" style="display: none;"></div>
+                            </div>
+                            
+                            <div class="image-preview">
+                                <div class="pixel" id="pixel0"></div>
+                                <div class="pixel" id="pixel1"></div>
+                                <div class="pixel" id="pixel2"></div>
+                                <div class="pixel" id="pixel3"></div>
+                            </div>
+                            
+                            <button id="applyImageBtn" class="btn btn-primary mt-3" style="display: none;">
+                                <i class="fas fa-check me-1"></i> Apply Colors
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Tip: You can also drag and drop an image onto this area.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="library-panel">
+            <div class="library-header">
+                <h2 class="mb-0"><i class="fas fa-book me-2"></i> Palette Library</h2>
+                <div class="library-controls">
+                    <button id="exportLibraryBtn" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-file-export me-1"></i> Export Library
+                    </button>
+                    <input type="text" class="search-box" id="searchLibrary" placeholder="Search palettes...">
+                </div>
+            </div>
+            
+            <div id="paletteLibrary">
+                <div class="empty-library" id="emptyLibrary">
+                    <i class="fas fa-folder-open"></i>
+                    <p>Your palette library is empty. Add palettes to see them here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="py-3 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">RoomMakers DevTools &copy; FaR-Team</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="https://github.com/FaR-Team/devtools" class="text-white text-decoration-none" target="_blank">
+                        <i class="fab fa-github me-1"></i> GitHub Repository
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <input type="file" id="fileInput" style="display: none;">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="js/palette-editor.js"></script>
+</body>
+</html>

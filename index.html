@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaR DevTools</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/enhanced-common.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-tools me-2"></i>FaR DevTools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="roommakers-data-editor/RMEditor.html">
+                            <i class="fas fa-database me-1"></i> RM Data Editor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="palettes-editor/ColorPaletteEditor.html">
+                            <i class="fas fa-palette me-1"></i> RM Palette Editor
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-tools me-2"></i> FaR DevTools</h1>
+                    <p class="text-white-50 mb-0">Development tools for FaR games</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-dark p-2">
+                        <i class="fas fa-code-branch me-1"></i> v1.2.0
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container flex-grow-1">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h2 class="text-primary"><i class="fas fa-database me-2"></i> RM Data Editor</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Edit furniture data and spawn probabilities for Room Makers</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Manage furniture items and their properties
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Configure spawn probabilities for furniture
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Import and export data as CSV
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white text-center">
+                        <a href="roommakers-data-editor/RMEditor.html" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open Data Editor
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h2 class="text-primary"><i class="fas fa-palette me-2"></i> RM Palette Editor</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Create and edit color palettes for Room Makers</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Design 4-color palettes for game assets
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Import colors from images
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i> Manage a library of palettes
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white text-center">
+                        <a href="palettes-editor/ColorPaletteEditor.html" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open Palette Editor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">RoomMakers DevTools &copy; FaR-Team</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="https://github.com/FaR-Team/devtools" class="text-white text-decoration-none" target="_blank">
+                        <i class="fab fa-github me-1"></i> GitHub Repository
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

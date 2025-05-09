@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Makers Data Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/enhanced-styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="../index.html">
+                <i class="fas fa-tools me-2"></i>FaR DevTools
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="../roommakers-data-editor/RMEditor.html">
+                            <i class="fas fa-database me-1"></i> RM Data Editor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../palettes-editor/ColorPaletteEditor.html">
+                            <i class="fas fa-palette me-1"></i> RM Palette Editor
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-database me-2"></i> Room Makers Data Editor</h1>
+                    <p class="text-white-50 mb-0">Edit furniture data and spawn probabilities for Room Makers</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-dark p-2">
+                        <i class="fas fa-code-branch me-1"></i> v1.2.0
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" id="furniture-tab">
+                    <i class="fas fa-couch me-1"></i> Furniture Editor
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="probability-tab">
+                    <i class="fas fa-percentage me-1"></i> Spawn Probability Editor
+                </a>
+            </li>
+        </ul>
+
+        <div id="furniture-editor" class="editor-section">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="section-title">
+                        <i class="fas fa-couch fa-lg"></i>
+                        <h2 class="mb-0">Furniture Editor</h2>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="action-buttons">
+                        <button class="btn btn-success" id="add-furniture">
+                            <i class="fas fa-plus me-1"></i> Add New Furniture
+                        </button>
+                        <button class="btn btn-primary" id="import-furniture">
+                            <i class="fas fa-file-import me-1"></i> Import CSV
+                        </button>
+                        <button class="btn btn-primary" id="export-furniture">
+                            <i class="fas fa-file-export me-1"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 col-lg-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="form-control" id="furniture-search" placeholder="Search furniture...">
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush" id="furniture-list" style="max-height: 600px; overflow-y: auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 col-lg-9">
+                    <div class="card" id="furniture-details">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title" id="furniture-details-title">Furniture Details</h5>
+                            <span class="tag-badge" id="furniture-tag-badge">None</span>
+                        </div>
+                        <div class="card-body">
+                            <form id="furniture-form">
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-info-circle"></i> Basic Information
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="furniture-name" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="furniture-name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="furniture-es-name" class="form-label">Spanish Name</label>
+                                            <input type="text" class="form-control" id="furniture-es-name">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-ruler-combined"></i> Size & Price
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="furniture-price" class="form-label">Price</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-coins"></i></span>
+                                                <input type="number" class="form-control" id="furniture-price">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="furniture-size-x" class="form-label">Size X</label>
+                                            <input type="number" class="form-control" id="furniture-size-x">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="furniture-size-y" class="form-label">Size Y</label>
+                                            <input type="number" class="form-control" id="furniture-size-y">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="furniture-type" class="form-label">Type of Size</label>
+                                            <select class="form-select" id="furniture-type">
+                                                <option value="one_one">1x1</option>
+                                                <option value="two_two">2x2</option>
+                                                <option value="two_one">2x1</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="furniture-tag" class="form-label">Furniture Tag</label>
+                                            <select class="form-select" id="furniture-tag">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="furniture-bonus" class="form-label">Tag Match Bonus Points</label>
+                                            <input type="number" class="form-control" id="furniture-bonus">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-cog"></i> Properties
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="furniture-wall">
+                                                <label class="form-check-label" for="furniture-wall">
+                                                    <i class="fas fa-grip-lines-vertical me-1"></i> Wall Object
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="furniture-labeler">
+                                                <label class="form-check-label" for="furniture-labeler">
+                                                    <i class="fas fa-tag me-1"></i> Is Labeler
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="furniture-combo">
+                                                <label class="form-check-label" for="furniture-combo">
+                                                    <i class="fas fa-object-group me-1"></i> Has Combo Sprite
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3" id="combo-section" style="display: none;">
+                                        <div class="col-md-12">
+                                            <label for="furniture-combo-trigger" class="form-label">Combo Trigger Furniture</label>
+                                            <select class="form-select" id="furniture-combo-trigger">
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-puzzle-piece"></i> Compatible Furniture
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <div id="compatibles-container" class="border p-3 rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" id="cancel-furniture">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="save-furniture">
+                                        <i class="fas fa-save me-1"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="probability-editor" class="editor-section" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="section-title">
+                        <i class="fas fa-percentage fa-lg"></i>
+                        <h2 class="mb-0">Spawn Probability Editor</h2>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="import-probability">
+                            <i class="fas fa-file-import me-1"></i> Import CSV
+                        </button>
+                        <button class="btn btn-primary" id="export-probability">
+                            <i class="fas fa-file-export me-1"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-sliders-h me-2"></i> Default Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="default-tag-probability" class="form-label">Default Tag Probability</label>
+                            <input type="range" class="form-range" min="0" max="100" id="default-tag-probability">
+                            <div class="text-center" id="default-tag-probability-value">10%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-tags me-2"></i> Tag Probabilities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="tag-probabilities-container">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-couch me-2"></i> Furniture Specific Probabilities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="add-furniture-probability" class="form-label">Add Furniture Override</label>
+                                <select class="form-select" id="add-furniture-probability">
+                                    <option value="">Select furniture to override...</option>
+                                </select>
+                            </div>
+                            <div id="furniture-probabilities-container">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12 text-end">
+                    <button type="button" class="btn btn-primary" id="save-probabilities">
+                        <i class="fas fa-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="import-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="import-modal-title">Import CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="csv-file" class="form-label">Select CSV File</label>
+                        <input class="form-control" type="file" id="csv-file" accept=".csv">
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Warning: Importing will overwrite current data. Make sure to export your changes first if needed.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirm-import">
+                        <i class="fas fa-file-import me-1"></i> Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="delete-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong id="delete-item-name"></strong>?</p>
+                    <p>This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/csv-handler.js"></script>
+    <script src="js/furniture-editor.js"></script>
+    <script src="js/probability-editor.js"></script>
+    <script src="js/roommakers-data-editor.js"></script>
+</body>
+</html>
