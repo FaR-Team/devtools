@@ -598,7 +598,7 @@ document.addEventListener('contextmenu', function(e) {
 });
 
 function loadDefaultPalettes() {
-    fetch('palettes/')
+    fetch('./palettes/')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Palettes directory not found');
@@ -632,9 +632,6 @@ function loadDefaultPalettes() {
         })
         .catch(error => {
             console.error('Error loading default palettes:', error);
-            if (paletteLibrary.length === 0) {
-                useBuiltInDefaults();
-            }
         });
 }
 
