@@ -598,7 +598,11 @@ document.addEventListener('contextmenu', function(e) {
 });
 
 function loadDefaultPalettes() {
-    fetch('./palettes/')
+
+    const palettesPath = new URL('./palettes/', document.currentScript ? document.currentScript.src : window.location.href).href;
+    console.log('Attempting to load palettes from:', palettesPath);
+
+    fetch(palettesPath)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Palettes directory not found');
