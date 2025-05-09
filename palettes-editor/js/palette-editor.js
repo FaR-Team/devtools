@@ -597,42 +597,95 @@ document.addEventListener('contextmenu', function(e) {
     }
 });
 
-function loadDefaultPalettes() {
-    fetch('../palettes-editor/palettes')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Palettes directory not found');
-            }
-            return response.text();
-        })
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const links = doc.querySelectorAll('a');
-            
-            const jsonFiles = Array.from(links)
-                .map(link => link.href)
-                .filter(href => href.endsWith('.json'))
-                .map(href => href.split('/').pop());
-            
-            if (jsonFiles.length === 0) {
-                throw new Error('No palette files found');
-            }
-            
-            const savedLibrary = localStorage.getItem('paletteLibrary');
-            const existingPalettes = savedLibrary ? JSON.parse(savedLibrary) : [];
-            
-            if (existingPalettes.length === 0) {
-                loadPaletteFiles(jsonFiles, []);
-            } else {
-                if (confirm(`You already have ${existingPalettes.length} palettes in your library. Would you like to add the palettes from the game? Click Cancel to keep only your existing palettes.`)) {
-                    loadPaletteFiles(jsonFiles, existingPalettes);
+async function loadDefaultPalettes() {
+    const manifestPath = 'palettes/manifest.json';
+    let defaultPaletteFiles = [];
+
+    try {
+        const manifestResponse = await fetch(manifestPath);
+        if (!manifestResponse.ok) {
+            console.error(`Default palettes manifest not found at ${manifestPath}. Status: ${manifestResponse.status}`);
+            const emptyLibraryMessageEl = document.getElementById('emptyLibrary');
+            if (emptyLibraryMessageEl) {
+                emptyLibraryMessageEl.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Could not load default palettes manifest. Ensure 'palettes/manifest.json' exists.</p>
+                    <p>You can still create new palettes or import a library manually.</p>`;
+                const paletteLibraryEl = document.getElementById('paletteLibrary');
+                if (paletteLibraryEl && paletteLibrary.length === 0) {
+                    paletteLibraryEl.classList.add('empty'); // Ensure class for styling if needed
+                    emptyLibraryMessageEl.style.display = 'block'; // Ensure it's visible
                 }
             }
-        })
-        .catch(error => {
-            console.error('Error loading default palettes:', error);
-        });
+            return
+        }
+        const manifestData = await manifestResponse.json();
+        if (manifestData.defaultPalettes && Array.isArray(manifestData.defaultPalettes)) {
+            defaultPaletteFilePaths = manifestData.defaultPalettes.map(fileName => `palettes/${fileName}`);        
+        } else {
+            console.error("Palette manifest is malformed or missing 'defaultPalettes' array.");
+        }
+    } catch (error) {
+        console.error('Error loading or parsing default palettes manifest:', error);
+
+        const emptyLibraryMessageEl = document.getElementById('emptyLibrary');
+        if (emptyLibraryMessageEl) {
+            emptyLibraryMessageEl.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading default palettes. Check console for details.</p>
+                <p>You can still create new palettes or import a library manually.</p>`;
+            const paletteLibraryEl = document.getElementById('paletteLibrary');
+            if (paletteLibraryEl && paletteLibrary.length === 0) {
+                paletteLibraryEl.classList.add('empty');
+                emptyLibraryMessageEl.style.display = 'block';
+            } 
+        }
+        return;
+    }
+
+    if (defaultPaletteFilePaths.length === 0) {
+        console.warn("No default palettes listed in manifest, or manifest was empty/invalid. No default palettes will be loaded.");
+        return;
+    }
+
+    console.log(`Found ${defaultPaletteFilePaths.length} default palettes in manifest. Checking against local library...`);
+    let newPalettesAddedCount = 0;
+
+    for (const filePath of defaultPaletteFilePaths) {
+        try {
+            const paletteResponse = await fetch(filePath);
+            if (!paletteResponse.ok) {
+                console.error(`Error loading default palette file ${filePath}: ${paletteResponse.statusText}`);
+                continue;
+            }
+            const paletteData = await paletteResponse.json();
+
+            if (!paletteData.name) {
+                console.warn(`Skipping default palette from ${filePath} as it has no 'name' property.`);
+                continue;
+            }
+
+            const existingPaletteIndex = paletteLibrary.findIndex(p => p.name === paletteData.name);
+            if (existingPaletteIndex === -1) { // Palette not found in current library (which includes localStorage items)
+                paletteLibrary.push(paletteData);
+                newPalettesAddedCount++;
+                console.log(`Added new default palette to library: "${paletteData.name}" from ${filePath}`);
+            } else {
+                console.log(`Default palette "${paletteData.name}" from ${filePath} already exists in local library. Skipping.`);
+            }
+
+        } catch (error) {
+            console.error(`Error processing default palette file ${filePath}:`, error);
+        }
+    
+        if (newPalettesAddedCount > 0) {
+            console.log(`Successfully added ${newPalettesAddedCount} new default palettes to the library.`);
+            saveLibrary();    // Save the updated library to localStorage
+            renderLibrary();  // Re-render the library display (this will also hide empty message if needed)
+        } else if (defaultPaletteFilePaths.length >0) {
+            console.log("No new default palettes were added. They may already exist in your local library, or there were issues loading them (check logs above).");
+        }
+    }
 }
 
 function loadPaletteFiles(fileNames, existingPalettes) {
