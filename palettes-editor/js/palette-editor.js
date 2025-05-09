@@ -598,7 +598,7 @@ document.addEventListener('contextmenu', function(e) {
 });
 
 function loadDefaultPalettes() {
-    fetch('./palettes/')
+    fetch('../palettes-editor/palettes')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Palettes directory not found');
