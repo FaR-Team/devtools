@@ -424,32 +424,38 @@ class ProbabilityEditor {
     }
     
     saveProbabilityChanges() {
-        this.probabilityData.tagProbabilities = [];
-        const tagSliders = document.querySelectorAll('#tag-probabilities-container input[type="range"]');
+        // Update tag probabilities from UI
+        const tagContainer = document.getElementById('tag-probabilities-container');
+        const tagSliders = tagContainer.querySelectorAll('.tag-probability-slider');
         
+        this.probabilityData.tagProbabilities = [];
         tagSliders.forEach(slider => {
-            const tag = slider.previousElementSibling.textContent;
-            const probability = parseFloat(slider.value);
-            
+            const tag = slider.dataset.tag;
+            const value = parseFloat(slider.value);
             this.probabilityData.tagProbabilities.push({
                 tag: tag,
-                spawnProbability: probability
+                probability: value
             });
         });
+        
+        // Update furniture specific probabilities from UI
+        const furnitureContainer = document.getElementById('furniture-probabilities-container');
+        const furnitureSliders = furnitureContainer.querySelectorAll('.furniture-probability-slider');
         
         this.probabilityData.furnitureSpecificProbabilities = [];
-        const furnitureSliders = document.querySelectorAll('#furniture-probabilities-container input[type="range"]');
-        
         furnitureSliders.forEach(slider => {
-            const path = slider.dataset.path;
-            const probability = parseFloat(slider.value);
-            
+            const furniturePath = slider.dataset.furniture;
+            const value = parseFloat(slider.value);
             this.probabilityData.furnitureSpecificProbabilities.push({
-                furniturePath: path,
-                spawnProbability: probability
+                furniturePath: furniturePath,
+                probability: value
             });
         });
         
+        // Save to local storage
+        localStorage.setItem('probabilityData', JSON.stringify(this.probabilityData));
+        
+        // Show success message
         alert('Probability data saved successfully!');
     }
     

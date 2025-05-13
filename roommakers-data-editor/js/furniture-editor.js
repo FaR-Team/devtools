@@ -307,42 +307,50 @@ class FurnitureEditor {
     }
     
     saveFurnitureChanges() {
-        if (!this.currentFurnitureItem) return;
-        
-        const updatedItem = { ...this.currentFurnitureItem };
-        updatedItem.Name = document.getElementById('furniture-name').value;
-        updatedItem.es_Name = document.getElementById('furniture-es-name').value;
-        updatedItem.Price = document.getElementById('furniture-price').value;
-        updatedItem.SizeX = document.getElementById('furniture-size-x').value;
-        updatedItem.SizeY = document.getElementById('furniture-size-y').value;
-        updatedItem.TypeOfSize = document.getElementById('furniture-type').value;
-        updatedItem.FurnitureTag = document.getElementById('furniture-tag').value;
-        updatedItem.TagMatchBonusPoints = document.getElementById('furniture-bonus').value;
-        updatedItem.IsWallObject = document.getElementById('furniture-wall').checked ? 'True' : 'False';
-        updatedItem.IsLabeler = document.getElementById('furniture-labeler').checked ? 'True' : 'False';
-        updatedItem.HasComboSprite = document.getElementById('furniture-combo').checked ? 'True' : 'False';
-        
-        if (document.getElementById('furniture-combo').checked) {
-            updatedItem.ComboTriggerFurniturePath = document.getElementById('furniture-combo-trigger').value;
-        } else {
-            updatedItem.ComboTriggerFurniturePath = '';
+        if (this.selectedFurnitureIndex === -1) {
+            return;
         }
         
-        const compatiblePaths = [];
-        document.querySelectorAll('#compatibles-container input[type="checkbox"]:checked').forEach(checkbox => {
-            compatiblePaths.push(checkbox.getAttribute('data-path'));
+        const furniture = this.furnitureData[this.selectedFurnitureIndex];
+        
+        // Update furniture object with form values
+        furniture.name = document.getElementById('furniture-name').value;
+        furniture.es_name = document.getElementById('furniture-es-name').value;
+        furniture.price = parseInt(document.getElementById('furniture-price').value);
+        furniture.size_x = parseInt(document.getElementById('furniture-size-x').value);
+        furniture.size_y = parseInt(document.getElementById('furniture-size-y').value);
+        furniture.type = document.getElementById('furniture-type').value;
+        furniture.tag = document.getElementById('furniture-tag').value;
+        furniture.bonus = parseInt(document.getElementById('furniture-bonus').value);
+        furniture.wall = document.getElementById('furniture-wall').checked;
+        furniture.labeler = document.getElementById('furniture-labeler').checked;
+        furniture.combo = document.getElementById('furniture-combo').checked;
+        
+        if (furniture.combo) {
+            furniture.comboTrigger = document.getElementById('furniture-combo-trigger').value;
+        } else {
+            furniture.comboTrigger = '';
+        }
+        
+        // Get compatibles from the UI
+        const compatiblesContainer = document.getElementById('compatibles-container');
+        const checkboxes = compatiblesContainer.querySelectorAll('input[type="checkbox"]');
+        furniture.compatibles = [];
+        
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                furniture.compatibles.push(checkbox.value);
+            }
         });
         
-        updatedItem.CompatibleFurniturePaths = compatiblePaths;
+        // Update the furniture list item
+        this.updateFurnitureListItem(this.selectedFurnitureIndex);
         
-        const index = this.furnitureData.findIndex(item => item.AssetPath === updatedItem.AssetPath);
-        if (index !== -1) {
-            this.furnitureData[index] = updatedItem;
-        }
+        // Save to local storage
+        localStorage.setItem('furnitureData', JSON.stringify(this.furnitureData));
         
-        this.updateFurnitureList();
-        
-        alert('Furniture updated successfully!');
+        // Show success message
+        alert('Furniture data saved successfully!');
     }
     
     showImportModal(type) {

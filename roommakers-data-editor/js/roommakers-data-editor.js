@@ -8,75 +8,43 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const probabilityEditor = new ProbabilityEditor();
     
-    fetch('csv/FurnitureData.csv')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(csvContent => {
-            console.log("Furniture CSV loaded successfully");
-            const parsedData = CSVHandler.parseCSV(csvContent);
-            if (parsedData.furnitureData && parsedData.furnitureData.length > 0) {
-                console.log(`Loaded ${parsedData.furnitureData.length} furniture items`);
-                furnitureEditor.loadFurnitureData(parsedData.furnitureData);
-                
-                probabilityEditor.furnitureData = parsedData.furnitureData;
-                
-                loadProbabilityData();
-            } else {
-                console.error('No valid furniture data found in the CSV file.');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading furniture data:', error);
-        });
+    // Load data from localStorage if available
+    const savedFurnitureData = localStorage.getItem('furnitureData');
+    if (savedFurnitureData) {
+        furnitureEditor.loadFurnitureData(JSON.parse(savedFurnitureData));
+    } else {
+        // Load default data or empty array
+        furnitureEditor.loadFurnitureData([]);
+    }
     
-    function loadProbabilityData() {
-        fetch('csv/SpawnProbabilityConfig.csv')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(csvContent => {
-                console.log("Probability CSV loaded successfully");
-                const parsedData = CSVHandler.parseProbabilityCSV(csvContent);
-                if (parsedData) {
-                    console.log("Parsed probability data:", parsedData);
-                    probabilityEditor.loadProbabilityData(parsedData);
-                } else {
-                    console.error('No valid probability data found in the CSV file.');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading probability data:', error);
-            });
+    const savedProbabilityData = localStorage.getItem('probabilityData');
+    if (savedProbabilityData) {
+        probabilityEditor.loadProbabilityData(JSON.parse(savedProbabilityData));
+    } else {
+        // Load default probability data
+        probabilityEditor.loadProbabilityData({
+            configName: 'SpawnProbabilityConfig',
+            defaultTagProbability: 10,
+            tagProbabilities: [],
+            furnitureSpecificProbabilities: []
+        });
     }
     
     document.getElementById('furniture-tab').addEventListener('click', (e) => {
         e.preventDefault();
-        showTab('furniture');
+        document.getElementById('furniture-tab').classList.add('active');
+        document.getElementById('probability-tab').classList.remove('active');
+        document.getElementById('furniture-editor').style.display = 'block';
+        document.getElementById('probability-editor').style.display = 'none';
     });
     
     document.getElementById('probability-tab').addEventListener('click', (e) => {
         e.preventDefault();
-        showTab('probability');
+        document.getElementById('probability-tab').classList.add('active');
+        document.getElementById('furniture-tab').classList.remove('active');
+        document.getElementById('furniture-editor').style.display = 'none';
+        document.getElementById('probability-editor').style.display = 'block';
     });
-    
-    function showTab(tabName) {
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-        
-        document.querySelectorAll('.editor-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        document.getElementById(`${tabName}-editor`).style.display = 'block';
-    }
     
     document.getElementById('add-furniture').addEventListener('click', () => {
         furnitureEditor.addNewFurniture();
