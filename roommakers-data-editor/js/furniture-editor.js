@@ -35,6 +35,39 @@ class FurnitureEditor {
         document.getElementById('furniture-combo').addEventListener('change', (e) => {
             document.getElementById('combo-section').style.display = e.target.checked ? 'block' : 'none';
         });
+        
+        // Add event listeners for form fields to auto-save
+        const formFields = [
+            'furniture-name', 'furniture-es-name', 'furniture-price',
+            'furniture-size-x', 'furniture-size-y', 'furniture-type',
+            'furniture-tag', 'furniture-bonus', 'furniture-wall',
+            'furniture-labeler', 'furniture-combo', 'furniture-combo-trigger'
+        ];
+        
+        formFields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                const eventType = element.type === 'checkbox' ? 'change' : 'input';
+                element.addEventListener(eventType, () => {
+                    this.autoSaveChanges();
+                });
+            }
+        });
+        
+        // Add event listener for compatible furniture checkboxes
+        document.getElementById('compatibles-container').addEventListener('change', (e) => {
+            if (e.target.classList.contains('form-check-input')) {
+                this.autoSaveChanges();
+            }
+        });
+    }
+    
+    autoSaveChanges() {
+        // Only save if a furniture item is selected
+        if (this.selectedFurnitureIndex !== -1) {
+            this.saveCurrentFurnitureChanges();
+            console.log('Auto-saved changes');
+        }
     }
     
     populateRoomTags() {
@@ -91,11 +124,60 @@ class FurnitureEditor {
     }
     
     selectFurniture(index) {
+        // Save current furniture changes if any
+        if (this.selectedFurnitureIndex !== -1) {
+            this.saveCurrentFurnitureChanges();
+        }
+        
         this.selectedFurnitureIndex = index;
         this.renderFurnitureList();
         this.populateFurnitureDetails();
         
         console.log("Selected furniture index:", index);
+    }
+    
+    saveCurrentFurnitureChanges() {
+        if (this.selectedFurnitureIndex === -1) return;
+        
+        const furniture = this.furnitureData[this.selectedFurnitureIndex];
+        
+        // Update furniture object with form values
+        furniture.Name = document.getElementById('furniture-name').value;
+        furniture.es_Name = document.getElementById('furniture-es-name').value;
+        furniture.Price = document.getElementById('furniture-price').value;
+        furniture.SizeX = document.getElementById('furniture-size-x').value;
+        furniture.SizeY = document.getElementById('furniture-size-y').value;
+        furniture.TypeOfSize = document.getElementById('furniture-type').value;
+        furniture.FurnitureTag = document.getElementById('furniture-tag').value;
+        furniture.TagMatchBonusPoints = document.getElementById('furniture-bonus').value;
+        furniture.IsWallObject = document.getElementById('furniture-wall').checked ? "True" : "False";
+        furniture.IsLabeler = document.getElementById('furniture-labeler').checked ? "True" : "False";
+        furniture.HasComboSprite = document.getElementById('furniture-combo').checked ? "True" : "False";
+        
+        if (furniture.HasComboSprite === "True") {
+            furniture.ComboTriggerFurniturePath = document.getElementById('furniture-combo-trigger').value;
+        } else {
+            furniture.ComboTriggerFurniturePath = '';
+        }
+        
+        // Get compatibles from the UI
+        const compatiblesContainer = document.getElementById('compatibles-container');
+        const checkboxes = compatiblesContainer.querySelectorAll('input[type="checkbox"]');
+        furniture.Compatibles = '';
+        
+        const compatiblePaths = [];
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                compatiblePaths.push(checkbox.dataset.path);
+            }
+        });
+        
+        if (compatiblePaths.length > 0) {
+            furniture.Compatibles = compatiblePaths.join(';');
+        }
+        
+        // Save to local storage
+        localStorage.setItem('furnitureData', JSON.stringify(this.furnitureData));
     }
     
     populateFurnitureDetails() {
@@ -148,6 +230,9 @@ class FurnitureEditor {
     
     parseCompatibles(compatiblesString) {
         console.log("Parsing compatibles string:", compatiblesString);
+
+        compatiblesString = String(compatiblesString || '');
+        
         if (!compatiblesString || compatiblesString.trim() === '') {
             return [];
         }
@@ -168,9 +253,15 @@ class FurnitureEditor {
         
         const currentFurniture = this.furnitureData[this.selectedFurnitureIndex];
         console.log("Current furniture:", currentFurniture);
-        console.log("Compatibles field:", currentFurniture.Compatibles);
         
-        const compatibles = this.parseCompatibles(currentFurniture.Compatibles || '');
+        // Ensure Compatibles is a string
+        const compatiblesString = String(currentFurniture.Compatibles || '');
+        console.log("Compatibles field:", compatiblesString);
+        
+        // Parse compatibles string to array
+        const compatibles = compatiblesString.split(';')
+            .map(path => path.trim())
+            .filter(path => path !== '');
         
         console.log(`Loading compatibles for ${currentFurniture.Name}:`, compatibles);
         
@@ -307,47 +398,7 @@ class FurnitureEditor {
     }
     
     saveFurnitureChanges() {
-        if (this.selectedFurnitureIndex === -1) {
-            return;
-        }
-        
-        const furniture = this.furnitureData[this.selectedFurnitureIndex];
-        
-        // Update furniture object with form values
-        furniture.name = document.getElementById('furniture-name').value;
-        furniture.es_name = document.getElementById('furniture-es-name').value;
-        furniture.price = parseInt(document.getElementById('furniture-price').value);
-        furniture.size_x = parseInt(document.getElementById('furniture-size-x').value);
-        furniture.size_y = parseInt(document.getElementById('furniture-size-y').value);
-        furniture.type = document.getElementById('furniture-type').value;
-        furniture.tag = document.getElementById('furniture-tag').value;
-        furniture.bonus = parseInt(document.getElementById('furniture-bonus').value);
-        furniture.wall = document.getElementById('furniture-wall').checked;
-        furniture.labeler = document.getElementById('furniture-labeler').checked;
-        furniture.combo = document.getElementById('furniture-combo').checked;
-        
-        if (furniture.combo) {
-            furniture.comboTrigger = document.getElementById('furniture-combo-trigger').value;
-        } else {
-            furniture.comboTrigger = '';
-        }
-        
-        // Get compatibles from the UI
-        const compatiblesContainer = document.getElementById('compatibles-container');
-        const checkboxes = compatiblesContainer.querySelectorAll('input[type="checkbox"]');
-        furniture.compatibles = [];
-        
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                furniture.compatibles.push(checkbox.value);
-            }
-        });
-        
-        // Update the furniture list item
-        this.updateFurnitureListItem(this.selectedFurnitureIndex);
-        
-        // Save to local storage
-        localStorage.setItem('furnitureData', JSON.stringify(this.furnitureData));
+        this.saveCurrentFurnitureChanges();
         
         // Show success message
         alert('Furniture data saved successfully!');
@@ -571,5 +622,145 @@ class FurnitureEditor {
         }
         
         this.currentFurnitureItem = item;
+    }
+
+    importFurnitureData(csvContent) {
+        try {
+            // Parse CSV content to array of objects
+            const parsedData = this.parseCSV(csvContent);
+            
+            if (parsedData && parsedData.length > 0) {
+                this.furnitureData = parsedData;
+                this.renderFurnitureList();
+                this.updateComboTriggerOptions();
+                
+                // Save to localStorage
+                localStorage.setItem('furnitureData', JSON.stringify(this.furnitureData));
+                
+                alert(`Successfully imported ${parsedData.length} furniture items.`);
+            } else {
+                alert('No valid furniture data found in the CSV file.');
+            }
+        } catch (error) {
+            console.error('Error importing furniture data:', error);
+            alert('Error importing furniture data. Please check the console for details.');
+        }
+    }
+
+    parseCSV(csvContent) {
+        // Split by lines and get headers
+        const lines = csvContent.split('\n');
+        if (lines.length < 2) return [];
+        
+        const headers = lines[0].split(',').map(header => header.trim());
+        
+        // Parse each line into an object
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue; // Skip empty lines
+            
+            const values = this.parseCSVLine(lines[i]);
+            if (values.length !== headers.length) continue; // Skip invalid lines
+            
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = values[index];
+            });
+            
+            result.push(obj);
+        }
+        
+        return result;
+    }
+
+    parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        result.push(current.trim());
+        return result;
+    }
+
+    toggleCsvPreview() {
+        const previewContainer = document.getElementById('csv-preview-container');
+        if (previewContainer.style.display === 'none') {
+            // Generate CSV preview as a table
+            this.generateExcelStylePreview();
+            previewContainer.style.display = 'block';
+            document.getElementById('toggle-csv-preview').innerHTML = '<i class="fas fa-times me-1"></i> Hide CSV Preview';
+        } else {
+            previewContainer.style.display = 'none';
+            document.getElementById('toggle-csv-preview').innerHTML = '<i class="fas fa-table me-1"></i> Show CSV Preview';
+        }
+    }
+
+    generateExcelStylePreview() {
+        const previewContent = document.getElementById('csv-preview-content');
+        previewContent.innerHTML = '';
+        
+        if (this.furnitureData.length === 0) {
+            previewContent.innerHTML = '<div class="alert alert-info">No furniture data available.</div>';
+            return;
+        }
+        
+        // Get all possible headers from all furniture items
+        const allHeaders = new Set();
+        this.furnitureData.forEach(item => {
+            Object.keys(item).forEach(key => allHeaders.add(key));
+        });
+        
+        const headers = Array.from(allHeaders);
+        
+        // Create table element
+        const table = document.createElement('table');
+        table.className = 'table table-sm table-bordered table-striped excel-preview';
+        
+        // Create header row
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        
+        // Create table body with data rows
+        const tbody = document.createElement('tbody');
+        
+        this.furnitureData.forEach((item, rowIndex) => {
+            const row = document.createElement('tr');
+            
+            headers.forEach(header => {
+                const cell = document.createElement('td');
+                cell.textContent = item[header] || '';
+                row.appendChild(cell);
+            });
+            
+            tbody.appendChild(row);
+        });
+        
+        table.appendChild(tbody);
+        previewContent.appendChild(table);
+        
+        // Add horizontal scrolling container if needed
+        previewContent.style.overflowX = 'auto';
     }
 }

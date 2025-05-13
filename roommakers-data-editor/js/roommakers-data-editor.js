@@ -29,6 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
             furnitureSpecificProbabilities: []
         });
     }
+
+    function loadDefaultFurnitureData() {
+        fetch('../csv/furnitureData.csv')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(csvContent => {
+                furnitureEditor.importFurnitureData(csvContent);
+            })
+            .catch(error => {
+                console.error('Error loading default furniture data:', error);
+                // If CSV loading fails, initialize with empty array
+                furnitureEditor.loadFurnitureData([]);
+            });
+    }
     
     document.getElementById('furniture-tab').addEventListener('click', (e) => {
         e.preventDefault();
@@ -138,6 +156,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = new bootstrap.Modal(document.getElementById('import-modal'));
         modal.show();
     }
+
+    function showTab(tabName) {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        document.querySelectorAll('.editor-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        document.getElementById(`${tabName}-editor`).style.display = 'block';
+    }
+    
+    document.getElementById('toggle-csv-preview').addEventListener('click', () => {
+        furnitureEditor.toggleCsvPreview();
+    });
+
+    document.getElementById('close-csv-preview').addEventListener('click', () => {
+        document.getElementById('csv-preview-container').style.display = 'none';
+        document.getElementById('toggle-csv-preview').innerHTML = '<i class="fas fa-table"></i>';
+    });
+
+    document.getElementById('download-csv').addEventListener('click', () => {
+        furnitureEditor.exportFurnitureData();
+    });
     
     showTab('furniture');
 });
