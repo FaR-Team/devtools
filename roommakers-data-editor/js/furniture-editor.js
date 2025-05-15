@@ -36,12 +36,12 @@ class FurnitureEditor {
             document.getElementById('combo-section').style.display = e.target.checked ? 'block' : 'none';
         });
         
-        // Add event listeners for form fields to auto-save
         const formFields = [
             'furniture-name', 'furniture-es-name', 'furniture-price',
             'furniture-size-x', 'furniture-size-y', 'furniture-type',
             'furniture-tag', 'furniture-bonus', 'furniture-wall',
-            'furniture-labeler', 'furniture-combo', 'furniture-combo-trigger'
+            'furniture-combo', 'furniture-combo-trigger',
+            'furniture-requires-base', 'furniture-base-object'
         ];
         
         formFields.forEach(fieldId => {
@@ -54,11 +54,14 @@ class FurnitureEditor {
             }
         });
         
-        // Add event listener for compatible furniture checkboxes
         document.getElementById('compatibles-container').addEventListener('change', (e) => {
             if (e.target.classList.contains('form-check-input')) {
                 this.autoSaveChanges();
             }
+        });
+
+        document.getElementById('furniture-requires-base').addEventListener('change', (e) => {
+            document.getElementById('base-object-section').style.display = e.target.checked ? 'block' : 'none';
         });
     }
     
@@ -68,6 +71,19 @@ class FurnitureEditor {
             this.saveCurrentFurnitureChanges();
             console.log('Auto-saved changes');
         }
+    }
+
+    updateBaseObjectOptions() {
+        const baseObjectSelect = document.getElementById('furniture-base-object');
+        baseObjectSelect.innerHTML = '<option value="">Select base object...</option>';
+        
+        this.furnitureData.forEach(furniture => {
+            // All furniture can potentially be a base
+            const option = document.createElement('option');
+            option.value = furniture.AssetPath;
+            option.textContent = furniture.Name;
+            baseObjectSelect.appendChild(option);
+        });
     }
     
     populateRoomTags() {
@@ -87,6 +103,7 @@ class FurnitureEditor {
         this.furnitureData = data;
         this.renderFurnitureList();
         this.updateComboTriggerOptions();
+        this.updateBaseObjectOptions();
     }
     
     renderFurnitureList() {
@@ -151,13 +168,19 @@ class FurnitureEditor {
         furniture.FurnitureTag = document.getElementById('furniture-tag').value;
         furniture.TagMatchBonusPoints = document.getElementById('furniture-bonus').value;
         furniture.IsWallObject = document.getElementById('furniture-wall').checked ? "True" : "False";
-        furniture.IsLabeler = document.getElementById('furniture-labeler').checked ? "True" : "False";
         furniture.HasComboSprite = document.getElementById('furniture-combo').checked ? "True" : "False";
+        furniture.RequiresBase = document.getElementById('furniture-requires-base').checked ? "True" : "False";
         
         if (furniture.HasComboSprite === "True") {
             furniture.ComboTriggerFurniturePath = document.getElementById('furniture-combo-trigger').value;
         } else {
             furniture.ComboTriggerFurniturePath = '';
+        }
+
+        if (furniture.RequiresBase === "True") {
+            furniture.RequiredBasePath = document.getElementById('furniture-base-object').value;
+        } else {
+            furniture.RequiredBasePath = '';
         }
         
         // Get compatibles from the UI
@@ -200,7 +223,6 @@ class FurnitureEditor {
         document.getElementById('furniture-tag').value = furniture.FurnitureTag || 'None';
         document.getElementById('furniture-bonus').value = furniture.TagMatchBonusPoints || 0;
         document.getElementById('furniture-wall').checked = furniture.WallObject === 'True';
-        document.getElementById('furniture-labeler').checked = furniture.IsLabeler === 'True';
         
         const hasCombo = furniture.HasComboSprite === 'True';
         document.getElementById('furniture-combo').checked = hasCombo;
@@ -210,7 +232,16 @@ class FurnitureEditor {
             this.updateComboTriggerOptions();
             document.getElementById('furniture-combo-trigger').value = furniture.ComboTriggerFurniturePath || '';
         }
+
+        const requiresBase = furniture.RequiresBase === 'True';
+        document.getElementById('furniture-requires-base').checked = requiresBase;
+        document.getElementById('base-object-section').style.display = requiresBase ? 'block' : 'none';
         
+        if (requiresBase) {
+            this.updateBaseObjectOptions();
+            document.getElementById('furniture-base-object').value = furniture.RequiredBasePath || '';
+        }
+
         this.populateCompatibleFurniture();
     }
     
@@ -307,10 +338,11 @@ class FurnitureEditor {
             FurnitureTag: 'None',
             TagMatchBonusPoints: '0',
             WallObject: 'False',
-            IsLabeler: 'False',
             HasComboSprite: 'False',
             ComboTriggerFurniturePath: '',
-            Compatibles: ''
+            Compatibles: '',
+            RequiresBase: 'False',
+            RequiredBasePath: ''
         };
         
         this.furnitureData.push(newFurniture);
@@ -330,7 +362,6 @@ class FurnitureEditor {
         document.getElementById('furniture-bonus').value = item.TagMatchBonusPoints || '0';
         
         document.getElementById('furniture-wall').checked = (item.IsWallObject || '').toLowerCase() === 'true';
-        document.getElementById('furniture-labeler').checked = (item.IsLabeler || '').toLowerCase() === 'true';
         document.getElementById('furniture-combo').checked = (item.HasComboSprite || '').toLowerCase() === 'true';
         
         const comboSection = document.getElementById('combo-section');
@@ -583,7 +614,6 @@ class FurnitureEditor {
         document.getElementById('furniture-bonus').value = item.TagMatchBonusPoints || '0';
         
         document.getElementById('furniture-wall').checked = (item.IsWallObject || '').toLowerCase() === 'true';
-        document.getElementById('furniture-labeler').checked = (item.IsLabeler || '').toLowerCase() === 'true';
         document.getElementById('furniture-combo').checked = (item.HasComboSprite || '').toLowerCase() === 'true';
         
         const comboSection = document.getElementById('combo-section');
@@ -698,7 +728,7 @@ class FurnitureEditor {
     toggleCsvPreview() {
         const previewContainer = document.getElementById('csv-preview-container');
         if (previewContainer.style.display === 'none') {
-            // Generate CSV preview as a table
+            // Generate Excel-style preview
             this.generateExcelStylePreview();
             previewContainer.style.display = 'block';
             document.getElementById('toggle-csv-preview').innerHTML = '<i class="fas fa-times me-1"></i> Hide CSV Preview';
@@ -716,6 +746,40 @@ class FurnitureEditor {
             previewContent.innerHTML = '<div class="alert alert-info">No furniture data available.</div>';
             return;
         }
+        
+        // Add Excel controls
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'excel-controls p-2 bg-light border-bottom';
+        
+        // Add search box
+        const searchDiv = document.createElement('div');
+        searchDiv.className = 'excel-search';
+        searchDiv.innerHTML = `
+            <input type="text" class="form-control form-control-sm" id="excel-search-input" placeholder="Search in table...">
+            <span class="search-icon"><i class="fas fa-search"></i></span>
+        `;
+        controlsDiv.appendChild(searchDiv);
+        
+        // Add view options
+        const viewOptionsDiv = document.createElement('div');
+        viewOptionsDiv.className = 'btn-group btn-group-sm';
+        viewOptionsDiv.innerHTML = `
+            <button class="btn btn-outline-secondary" id="expand-all-cells">
+                <i class="fas fa-expand-arrows-alt me-1"></i> Expand All
+            </button>
+            <button class="btn btn-outline-secondary" id="collapse-all-cells">
+                <i class="fas fa-compress-arrows-alt me-1"></i> Collapse All
+            </button>
+        `;
+        controlsDiv.appendChild(viewOptionsDiv);
+        
+        previewContent.appendChild(controlsDiv);
+        
+        // Create a scrollable container for the table
+        const tableContainer = document.createElement('div');
+        tableContainer.style.overflow = 'auto';
+        tableContainer.style.height = 'calc(100% - 50px)'; // Adjust for the controls height
+        previewContent.appendChild(tableContainer);
         
         // Get all possible headers from all furniture items
         const allHeaders = new Set();
@@ -736,6 +800,12 @@ class FurnitureEditor {
         headers.forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
+            
+            // Add resize handle
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            th.appendChild(resizeHandle);
+            
             headerRow.appendChild(th);
         });
         
@@ -750,7 +820,20 @@ class FurnitureEditor {
             
             headers.forEach(header => {
                 const cell = document.createElement('td');
-                cell.textContent = item[header] || '';
+                const value = item[header] || '';
+                cell.textContent = value;
+                
+                // Add title attribute for tooltip on hover
+                if (value.length > 30) {
+                    cell.setAttribute('title', value);
+                    cell.setAttribute('data-full-text', value);
+                    
+                    // Add click handler to expand/collapse
+                    cell.addEventListener('click', function() {
+                        this.classList.toggle('expanded');
+                    });
+                }
+                
                 row.appendChild(cell);
             });
             
@@ -758,9 +841,87 @@ class FurnitureEditor {
         });
         
         table.appendChild(tbody);
-        previewContent.appendChild(table);
+        tableContainer.appendChild(table);
         
-        // Add horizontal scrolling container if needed
-        previewContent.style.overflowX = 'auto';
+        // Initialize column resizing
+        this.initColumnResizing(table);
+        
+        // Initialize search functionality
+        this.initExcelSearch();
+        
+        // Initialize expand/collapse buttons
+        document.getElementById('expand-all-cells').addEventListener('click', () => {
+            document.querySelectorAll('.excel-preview td').forEach(cell => {
+                if (cell.getAttribute('data-full-text')) {
+                    cell.classList.add('expanded');
+                }
+            });
+        });
+        
+        document.getElementById('collapse-all-cells').addEventListener('click', () => {
+            document.querySelectorAll('.excel-preview td').forEach(cell => {
+                cell.classList.remove('expanded');
+            });
+        });
+    }
+
+    initColumnResizing(table) {
+        const cols = table.querySelectorAll('th');
+        
+        [].forEach.call(cols, function(col) {
+            // Add event listener for mousedown on the resize handle
+            const resizeHandle = col.querySelector('.resize-handle');
+            resizeHandle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                
+                const startX = e.pageX;
+                const startWidth = col.offsetWidth;
+                
+                // Add mousemove event listener to the document
+                document.addEventListener('mousemove', onMouseMove);
+                
+                // Add mouseup event listener to the document
+                document.addEventListener('mouseup', onMouseUp);
+                
+                function onMouseMove(e) {
+                    const width = startWidth + (e.pageX - startX);
+                    col.style.width = width + 'px';
+                    col.style.minWidth = width + 'px';
+                }
+                
+                function onMouseUp() {
+                    // Remove event listeners
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+            });
+        });
+    }
+
+    initExcelSearch() {
+        const searchInput = document.getElementById('excel-search-input');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cells = document.querySelectorAll('.excel-preview td');
+            
+            cells.forEach(cell => {
+                // Remove any existing highlights
+                const text = cell.getAttribute('data-full-text') || cell.textContent;
+                cell.textContent = text;
+                
+                if (searchTerm && text.toLowerCase().includes(searchTerm)) {
+                    // Highlight the cell
+                    cell.classList.add('highlight-match');
+                    
+                    // Expand the cell if it contains the search term
+                    if (cell.getAttribute('data-full-text')) {
+                        cell.classList.add('expanded');
+                    }
+                } else {
+                    cell.classList.remove('highlight-match');
+                }
+            });
+        });
     }
 }

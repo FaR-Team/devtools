@@ -9,88 +9,166 @@
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/enhanced-styles.css">
-    <style>
-        .excel-preview {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 0.9rem;
-        }
-        
-        .excel-preview thead {
-            background-color: #f0f0f0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .excel-preview th {
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            font-weight: bold;
-            text-align: center;
-            padding: 8px;
-            white-space: nowrap;
-        }
-        
-        .excel-preview td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .excel-preview tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .excel-preview tr:hover {
-            background-color: #f1f1f1;
-        }
-        
-        #csv-preview-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-height: 40vh;
-            background-color: white;
-            border-top: 3px solid #007bff;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            padding: 0;
-            margin: 0;
-        }
-        
-        #csv-preview-content {
-            height: calc(40vh - 40px);
-            overflow: auto;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .csv-preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 15px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .csv-preview-title {
-            font-weight: bold;
-            margin: 0;
-        }
-        
-        #toggle-csv-preview {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1001;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+<style>
+    .excel-preview {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.9rem;
+        table-layout: fixed;
+    }
+    
+    .excel-preview thead {
+        background-color: #f0f0f0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .excel-preview th {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        font-weight: bold;
+        text-align: center;
+        padding: 8px;
+        white-space: nowrap;
+        position: relative;
+        min-width: 100px;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .excel-preview th .resize-handle {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        background-color: rgba(0,0,0,0.05);
+    }
+    
+    .excel-preview th .resize-handle:hover {
+        background-color: rgba(0,0,0,0.2);
+    }
+    
+    .excel-preview td {
+        border: 1px solid #ddd;
+        padding: 6px;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    
+    .excel-preview td.expanded {
+        white-space: normal;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: #f8f8f8;
+        position: relative;
+        z-index: 5;
+    }
+    
+    .excel-preview tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    
+    .excel-preview tr:hover {
+        background-color: #f1f1f1;
+    }
+    
+    #csv-preview-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 50vh;
+        background-color: white;
+        border-top: 3px solid #007bff;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+        resize: vertical;
+        overflow: hidden;
+        min-height: 200px;
+    }
+    
+    #csv-preview-content {
+        height: calc(100% - 40px);
+        overflow: auto;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .csv-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        height: 40px;
+    }
+    
+    .csv-preview-title {
+        font-weight: bold;
+        margin: 0;
+    }
+    
+    #toggle-csv-preview {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1001;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .cell-tooltip {
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        z-index: 1002;
+        max-width: 300px;
+        word-wrap: break-word;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .excel-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .excel-search {
+        flex: 1;
+        max-width: 300px;
+        position: relative;
+    }
+    
+    .excel-search input {
+        padding-right: 30px;
+    }
+    
+    .excel-search .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .highlight-match {
+        background-color: yellow;
+        color: black;
+    }
+</style>
     </style>
 </head>
 <body>
@@ -176,16 +254,18 @@
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
+            <div class="row mb-4">
                 <div class="col-12">
                     <button class="btn btn-primary rounded-circle" id="toggle-csv-preview" title="Show CSV Preview">
                         <i class="fas fa-table"></i>
                     </button>
                     <div id="csv-preview-container" style="display: none;">
                         <div class="csv-preview-header">
-                            <h5 class="csv-preview-title">CSV Data Preview</h5>
+                            <h5 class="csv-preview-title">
+                                <i class="fas fa-table me-2"></i>CSV Data Preview
+                            </h5>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-secondary" id="download-csv">
+                                <button class="btn btn-outline-primary" id="download-csv">
                                     <i class="fas fa-download me-1"></i> Download CSV
                                 </button>
                                 <button class="btn btn-outline-secondary" id="close-csv-preview">
@@ -296,14 +376,6 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="furniture-labeler">
-                                                <label class="form-check-label" for="furniture-labeler">
-                                                    <i class="fas fa-tag me-1"></i> Is Labeler
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="furniture-combo">
                                                 <label class="form-check-label" for="furniture-combo">
                                                     <i class="fas fa-object-group me-1"></i> Has Combo Sprite
@@ -320,6 +392,30 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <i class="fas fa-layer-group"></i> Base Requirements
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="furniture-requires-base">
+                                                <label class="form-check-label" for="furniture-requires-base">
+                                                    <i class="fas fa-layer-group me-1"></i> Requires Base Object
+                                                </label>
+                                            </div>
+                                            
+                                            <div id="base-object-section" style="display: none;">
+                                                <label for="furniture-base-object" class="form-label">Required Base Object</label>
+                                                <select class="form-select" id="furniture-base-object">
+                                                    <option value="">Select base object...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 
                                 <div class="form-section">
                                     <div class="form-section-title">

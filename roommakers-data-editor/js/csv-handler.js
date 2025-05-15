@@ -129,7 +129,8 @@ class CSVHandler {
         const headers = [
             'AssetPath', 'Name', 'es_Name', 'Price', 'SizeX', 'SizeY', 
             'TypeOfSize', 'PrefabPath', 'FurnitureTag', 'TagMatchBonusPoints', 
-            'WallObject', 'HasComboSprite', 'ComboTriggerFurniturePath', 'Compatibles'
+            'WallObject', 'HasComboSprite', 'ComboTriggerFurniturePath', 'Compatibles',
+            'RequiresBase', 'RequiredBasePath'
         ];
         
         let csvContent = headers.join(',') + '\n';
