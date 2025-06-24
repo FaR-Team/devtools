@@ -30,6 +30,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.getElementById('furniture-description').addEventListener('input', (e) => {
+        const count = e.target.value.length;
+        const counter = document.getElementById('description-count');
+        counter.textContent = count;
+        
+        counter.className = 'character-counter';
+        if (count > 90) {
+            counter.classList.add('danger');
+        } else if (count > 75) {
+            counter.classList.add('warning');
+        }
+    });
+
+    document.getElementById('furniture-es-description').addEventListener('input', (e) => {
+        const count = e.target.value.length;
+        const counter = document.getElementById('es-description-count');
+        counter.textContent = count;
+        
+        counter.className = 'character-counter';
+        if (count > 90) {
+            counter.classList.add('danger');
+        } else if (count > 75) {
+            counter.classList.add('warning');
+        }
+    });
+
     function loadDefaultFurnitureData() {
         fetch('../csv/furnitureData.csv')
             .then(response => {
@@ -43,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Error loading default furniture data:', error);
-                // If CSV loading fails, initialize with empty array
                 furnitureEditor.loadFurnitureData([]);
             });
     }

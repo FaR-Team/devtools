@@ -10,6 +10,19 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/enhanced-styles.css">
 <style>
+    .character-counter {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .character-counter.warning {
+        color: #fd7e14;
+    }
+    
+    .character-counter.danger {
+        color: #dc3545;
+    }
+    
     .excel-preview {
         border-collapse: collapse;
         width: 100%;
@@ -211,7 +224,7 @@
                 </div>
                 <div class="col-md-4 text-md-end">
                     <span class="badge bg-light text-dark p-2">
-                        <i class="fas fa-code-branch me-1"></i> v1.2.0
+                        <i class="fas fa-code-branch me-1"></i> v1.2.1
                     </span>
                 </div>
             </div>
@@ -316,6 +329,22 @@
                                             <input type="text" class="form-control" id="furniture-es-name">
                                         </div>
                                     </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="furniture-description" class="form-label">Description</label>
+                                            <textarea class="form-control" id="furniture-description" rows="3" maxlength="110" placeholder="Max 110 characters"></textarea>
+                                            <div class="form-text">
+                                                <span id="description-count">0</span>/110 characters
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="furniture-es-description" class="form-label">Spanish Description</label>
+                                            <textarea class="form-control" id="furniture-es-description" rows="3" maxlength="110" placeholder="Max 110 characters"></textarea>
+                                            <div class="form-text">
+                                                <span id="es-description-count">0</span>/110 characters
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <div class="form-section">
@@ -381,6 +410,29 @@
                                                     <i class="fas fa-object-group me-1"></i> Has Combo Sprite
                                                 </label>
                                             </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="furniture-stack-receiver">
+                                                <label class="form-check-label" for="furniture-stack-receiver">
+                                                    <i class="fas fa-layer-group me-1"></i> Stack Receiver
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="furniture-stackable">
+                                                <label class="form-check-label" for="furniture-stackable">
+                                                    <i class="fas fa-cubes me-1"></i> Is Stackable
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="furniture-max-stack" class="form-label">Max Stack Level</label>
+                                            <input type="number" class="form-control" id="furniture-max-stack" min="1" value="1">
                                         </div>
                                     </div>
                                     

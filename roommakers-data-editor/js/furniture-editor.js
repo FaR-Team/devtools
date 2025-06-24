@@ -37,11 +37,12 @@ class FurnitureEditor {
         });
         
         const formFields = [
-            'furniture-name', 'furniture-es-name', 'furniture-price',
-            'furniture-size-x', 'furniture-size-y', 'furniture-type',
+            'furniture-name', 'furniture-es-name',  'furniture-description', 'furniture-es-description',
+            'furniture-price', 'furniture-size-x', 'furniture-size-y', 'furniture-type',
             'furniture-tag', 'furniture-bonus', 'furniture-wall',
             'furniture-combo', 'furniture-combo-trigger',
-            'furniture-requires-base', 'furniture-base-object'
+            'furniture-requires-base', 'furniture-base-object',
+            'furniture-stack-receiver', 'furniture-stackable', 'furniture-max-stack'
         ];
         
         formFields.forEach(fieldId => {
@@ -161,6 +162,8 @@ class FurnitureEditor {
         // Update furniture object with form values
         furniture.Name = document.getElementById('furniture-name').value;
         furniture.es_Name = document.getElementById('furniture-es-name').value;
+        furniture.Description = document.getElementById('furniture-description').value;
+        furniture.es_Description = document.getElementById('furniture-es-description').value;
         furniture.Price = document.getElementById('furniture-price').value;
         furniture.SizeX = document.getElementById('furniture-size-x').value;
         furniture.SizeY = document.getElementById('furniture-size-y').value;
@@ -170,6 +173,9 @@ class FurnitureEditor {
         furniture.IsWallObject = document.getElementById('furniture-wall').checked ? "True" : "False";
         furniture.HasComboSprite = document.getElementById('furniture-combo').checked ? "True" : "False";
         furniture.RequiresBase = document.getElementById('furniture-requires-base').checked ? "True" : "False";
+        furniture.IsStackReceiver = document.getElementById('furniture-stack-receiver').checked ? "True" : "False";
+        furniture.IsStackable = document.getElementById('furniture-stackable').checked ? "True" : "False";
+        furniture.MaxStackLevel = document.getElementById('furniture-max-stack').value;
         
         if (furniture.HasComboSprite === "True") {
             furniture.ComboTriggerFurniturePath = document.getElementById('furniture-combo-trigger').value;
@@ -216,6 +222,8 @@ class FurnitureEditor {
         document.getElementById('furniture-details-title').textContent = `Editing: ${furniture.Name}`;
         document.getElementById('furniture-name').value = furniture.Name || '';
         document.getElementById('furniture-es-name').value = furniture.es_Name || '';
+        document.getElementById('furniture-description').value = furniture.Description || '';
+        document.getElementById('furniture-es-description').value = furniture.es_Description || '';
         document.getElementById('furniture-price').value = furniture.Price || 0;
         document.getElementById('furniture-size-x').value = furniture.SizeX || 1;
         document.getElementById('furniture-size-y').value = furniture.SizeY || 1;
@@ -223,6 +231,9 @@ class FurnitureEditor {
         document.getElementById('furniture-tag').value = furniture.FurnitureTag || 'None';
         document.getElementById('furniture-bonus').value = furniture.TagMatchBonusPoints || 0;
         document.getElementById('furniture-wall').checked = furniture.WallObject === 'True';
+        document.getElementById('furniture-stack-receiver').checked = furniture.IsStackReceiver === 'True';
+        document.getElementById('furniture-stackable').checked = furniture.IsStackable === 'True';
+        document.getElementById('furniture-max-stack').value = furniture.MaxStackLevel || 1;
         
         const hasCombo = furniture.HasComboSprite === 'True';
         document.getElementById('furniture-combo').checked = hasCombo;
@@ -330,6 +341,8 @@ class FurnitureEditor {
             AssetPath: '',
             Name: 'New Furniture',
             es_Name: '',
+            Description: '',
+            es_Description: '',
             Price: '0',
             SizeX: '1',
             SizeY: '1',
@@ -342,7 +355,10 @@ class FurnitureEditor {
             ComboTriggerFurniturePath: '',
             Compatibles: '',
             RequiresBase: 'False',
-            RequiredBasePath: ''
+            RequiredBasePath: '',
+            IsStackReceiver: 'False',
+            IsStackable: 'False',
+            MaxStackLevel: '1'
         };
         
         this.furnitureData.push(newFurniture);
@@ -354,6 +370,8 @@ class FurnitureEditor {
     loadFurnitureItem(item) {
         document.getElementById('furniture-name').value = item.Name || '';
         document.getElementById('furniture-es-name').value = item.es_Name || '';
+        document.getElementById('furniture-description').value = item.Description || '';
+        document.getElementById('furniture-es-description').value = item.es_Description || '';
         document.getElementById('furniture-price').value = item.Price || '0';
         document.getElementById('furniture-size-x').value = item.SizeX || '1';
         document.getElementById('furniture-size-y').value = item.SizeY || '1';
@@ -363,6 +381,12 @@ class FurnitureEditor {
         
         document.getElementById('furniture-wall').checked = (item.IsWallObject || '').toLowerCase() === 'true';
         document.getElementById('furniture-combo').checked = (item.HasComboSprite || '').toLowerCase() === 'true';
+        document.getElementById('furniture-stack-receiver').checked = (item.IsStackReceiver || '').toLowerCase() === 'true';
+        document.getElementById('furniture-stackable').checked = (item.IsStackable || '').toLowerCase() === 'true';
+        document.getElementById('furniture-max-stack').value = item.MaxStackLevel || '1';
+        
+        document.getElementById('description-count').textContent = (item.Description || '').length;
+        document.getElementById('es-description-count').textContent = (item.es_Description || '').length;
         
         const comboSection = document.getElementById('combo-section');
         if (document.getElementById('furniture-combo').checked) {
@@ -371,6 +395,9 @@ class FurnitureEditor {
         } else {
             comboSection.style.display = 'none';
         }
+        
+        document.getElementById('furniture-details-title').textContent = item.Name;
+        document.getElementById('furniture-tag-badge').textContent = item.FurnitureTag || 'None';
         
         this.updateCompatibleFurnitureCheckboxes();
         
@@ -468,6 +495,11 @@ class FurnitureEditor {
     }
     
     exportFurnitureData() {
+        if (this.furnitureData.length === 0) {
+            alert('No furniture data to export.');
+            return;
+        }
+        
         const headers = Object.keys(this.furnitureData[0]);
         
         let csvContent = headers.join(',') + '\n';
@@ -476,12 +508,16 @@ class FurnitureEditor {
             const values = headers.map(header => {
                 let value = item[header];
                 
-                if (header === 'CompatibleFurniturePaths') {
+                if (header === 'CompatibleFurniturePaths' || header === 'Compatibles') {
                     if (Array.isArray(value)) {
                         value = value.join(';');
                     }
                     if (value && (value.includes(',') || value.includes(';'))) {
                         value = `"${value}"`;
+                    }
+                } else if (header === 'Description' || header === 'es_Description') {
+                    if (value && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                        value = `"${value.replace(/"/g, '""')}"`;
                     }
                 } else if (typeof value === 'string' && value.includes(',')) {
                     value = `"${value}"`;
@@ -601,6 +637,9 @@ class FurnitureEditor {
         document.getElementById('furniture-details-title').textContent = 'Furniture Details';
         document.getElementById('furniture-tag-badge').textContent = 'None';
         document.getElementById('combo-section').style.display = 'none';
+        document.getElementById('description-count').textContent = '0';
+        document.getElementById('es-description-count').textContent = '0';
+        document.getElementById('furniture-max-stack').value = '1';
     }
 
     loadFurnitureItem(item) {
@@ -712,7 +751,12 @@ class FurnitureEditor {
             const char = line[i];
             
             if (char === '"') {
-                inQuotes = !inQuotes;
+                if (inQuotes && line[i + 1] === '"') {
+                    current += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
             } else if (char === ',' && !inQuotes) {
                 result.push(current.trim());
                 current = '';

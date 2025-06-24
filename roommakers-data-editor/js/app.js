@@ -39,6 +39,8 @@ class RoomMakersDataEditor {
                 AssetPath: 'Assets/Furniture/Bed.asset',
                 Name: 'Bed',
                 es_Name: 'Cama',
+                Description: 'A comfortable bed for sleeping',
+                es_Description: 'Una cama cómoda para dormir',
                 Price: '100',
                 SizeX: '2',
                 SizeY: '1',
@@ -48,42 +50,34 @@ class RoomMakersDataEditor {
                 TagMatchBonusPoints: '50',
                 IsLabeler: 'True',
                 HasComboSprite: 'False',
-                ComboTriggerFurniturePath: ''
+                ComboTriggerFurniturePath: '',
+                IsStackReceiver: 'False',
+                IsStackable: 'False',
+                MaxStackLevel: '1'
             },
             {
                 AssetPath: 'Assets/Furniture/Table.asset',
                 Name: 'Table',
                 es_Name: 'Mesa',
+                Description: 'A sturdy wooden table',
+                es_Description: 'Una mesa de madera resistente',
                 Price: '75',
                 SizeX: '2',
                 SizeY: '2',
                 TypeOfSize: 'two_two',
                 PrefabPath: 'Assets/Prefabs/Furniture/Table.prefab',
                 FurnitureTag: 'DiningRoom',
-                TagMatchBonusPoints: '50',
-                IsLabeler: 'True',
-                HasComboSprite: 'False',
-                ComboTriggerFurniturePath: ''
-            },
-            {
-                AssetPath: 'Assets/Furniture/Chair.asset',
-                Name: 'Chair',
-                es_Name: 'Silla',
-                Price: '25',
-                SizeX: '1',
-                SizeY: '1',
-                TypeOfSize: 'one_one',
-                PrefabPath: 'Assets/Prefabs/Furniture/Chair.prefab',
-                FurnitureTag: 'DiningRoom',
                 TagMatchBonusPoints: '30',
                 IsLabeler: 'False',
-                HasComboSprite: 'True',
-                ComboTriggerFurniturePath: 'Assets/Furniture/Table.asset'
+                HasComboSprite: 'False',
+                ComboTriggerFurniturePath: '',
+                IsStackReceiver: 'True',
+                IsStackable: 'False',
+                MaxStackLevel: '3'
             }
         ];
         
         this.furnitureEditor.loadFurnitureData(defaultFurniture);
-        this.probabilityEditor.setFurnitureData(defaultFurniture);
     }
     
     createDefaultProbabilityData() {
